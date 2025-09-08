@@ -1,0 +1,75 @@
+.rules-container {
+  max-width: 700px;
+  margin: 2.5rem auto;
+  background: #181c2f;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  padding: 2.5rem 1.5rem 2.5rem 1.5rem;
+  color: #fff;
+}
+
+.rules-title {
+  color: #ff3c3c;
+  font-size: 2.1rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.rules-section-title {
+  color: #ffb400;
+  font-size: 1.3rem;
+  text-align: center;
+  margin-bottom: 2.2rem;
+  font-weight: 600;
+}
+
+.rules-section {
+  margin-bottom: 2rem;
+}
+
+.rules-heading {
+  color: #ff3c3c;
+  font-size: 1.15rem;
+  font-weight: bold;
+  margin-bottom: 0.7rem;
+}
+
+.rules-section ul {
+  list-style: decimal inside;
+  padding-left: 0.5rem;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.rules-section ul li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.rules-back-link {
+  color: #ffb400;
+  font-weight: 600;
+  text-decoration: underline;
+  font-size: 1.08rem;
+  transition: color 0.2s;
+}
+
+
+@media (max-width: 600px) {
+  .rules-container {
+    padding: 1.2rem 0.3rem 1.5rem 0.3rem;
+  }
+  .rules-title {
+    font-size: 1.2rem;
+  }
+  .rules-section-title {
+    font-size: 1rem;
+  }
+  .rules-heading {
+    font-size: 1rem;
+  }
+  .rules-section ul {
+    font-size: 0.98rem;
+  }
+} 

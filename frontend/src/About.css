@@ -1,0 +1,147 @@
+.about-container {
+  width: 100vw;
+  min-height: 100vh;
+  background: white;
+  padding-bottom: 2rem;
+}
+
+.about-banner {
+  width: 100vw;
+  min-height: 320px;
+  background-image: url('https://images.moneycontrol.com/static-mcnews/2025/02/20250228041221_garena5.jpg?impolicy=website&width=770&height=431');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+  padding: 3rem;
+  margin-top: 0 !important;
+}
+
+.about-banner-overlay {
+  background: rgba(24, 28, 47, 0.8);
+  color: #fff;
+  padding: 3rem 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  max-width: 700px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.about-banner-overlay h1 {
+  font-size: 2.3rem;
+  color: #ffb400;
+  margin-bottom: 1.2rem;
+  font-weight: bold;
+}
+
+.about-banner-overlay p {
+  font-size: 1.15rem;
+  margin-bottom: 0;
+  line-height: 1.7;
+}
+
+.about-highlight {
+  color: #ffb400;
+  font-weight: bold;
+}
+
+.about-cards-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem;
+  margin: 2.5rem 0 2rem 0;
+}
+
+.about-card {
+  background: #23263a;
+  color: white;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  padding: 2rem 1.5rem;
+  max-width: 340px;
+  min-width: 260px;
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.about-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.about-card-title {
+  font-size: 1.3rem;
+  color: #ffb400;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.about-list {
+  list-style: disc inside;
+  padding-left: 0;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.about-list li {
+  margin-bottom: 0.7rem;
+  line-height: 1.6;
+}
+
+.about-bottom-message {
+  margin: 3rem auto 0 auto;
+  color: white;
+  max-width: 700px;
+  text-align: center;
+  background: #23263a;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  padding: 2rem 1.5rem;
+}
+
+.about-bottom-message h2 {
+  color: #ffb400;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+@media (max-width: 900px) {
+  .about-cards-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .about-card {
+    max-width: 95vw;
+    min-width: unset;
+  }
+}
+
+@media (max-width: 600px) {
+  .about-banner {
+    min-height: 160px;
+    margin-top: 0 !important;
+  }
+  .about-banner-overlay {
+    padding: 1.2rem 0.5rem;
+    max-width: 98vw;
+  }
+  .about-banner-overlay h1 {
+    font-size: 1.2rem;
+  }
+  .about-banner-overlay p {
+    font-size: 1rem;
+  }
+  .about-bottom-message {
+    padding: 1.2rem 0.5rem;
+    max-width: 98vw;
+  }
+} 
