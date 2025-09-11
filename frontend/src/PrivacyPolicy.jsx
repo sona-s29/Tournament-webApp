@@ -12,7 +12,7 @@ function PrivacyPolicy() {
       <div className="privacy-section">
         <h2>Information We Collect</h2>
         <ul>
-          <li>Account information (name, email, UID, etc.)</li>
+          <li>Account information (UID)</li>
           <li>Payment details (processed securely via third-party gateways)</li>
           <li>Gameplay and participation data</li>
           <li>Device and usage information</li>
@@ -37,7 +37,7 @@ function PrivacyPolicy() {
       </div>
       <div className="privacy-section">
         <h2>Contact Us</h2>
-        <p>If you have any questions or concerns about your privacy, please contact us at <a href="mailto:support@classytournament.com">support@classytournament.com</a>.</p>
+        <p>If you have any questions or concerns about your privacy, please contact us at <a href="classytournamentofficial@gmail.com">classytournamentofficial@gmail.com</a>.</p>
       </div>
     </div>
   );

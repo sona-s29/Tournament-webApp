@@ -39,12 +39,12 @@ function TermsConditions() {
           <p className="text-white text-base sm:text-sm">
             For questions or disputes, contact us at{' '}
             <a
-              href="mailto:support@classytournament.com"
+              href="classytournamentofficial@gmail.com"
               className="text-[#ffb400] underline hover:text-white"
             >
-              support@classytournament.com
+             classytournamentofficial@gmail.com
             </a>
-            .
+            
           </p>
         </div>
       </div>
