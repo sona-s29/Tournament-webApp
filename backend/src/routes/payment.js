@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { createOrder, verifyPayment } = require("../controllers/payment.js");
+const { createOrder, verifyPayment } = require("../controllers/payment");
 
-// Routes for mock payments
 router.post("/order", createOrder);
 router.post("/verify", verifyPayment);
 

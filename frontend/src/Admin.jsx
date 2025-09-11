@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiLogOut } from 'react-icons/fi';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const PAGE_BG = '#fff';
 const CARD_BG = '#181c2f';

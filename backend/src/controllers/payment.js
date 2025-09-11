@@ -1,32 +1,60 @@
-// Mock Payment Controller
+// src/controllers/payment.js
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 
-// Create a fake order
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// Create an order (used by Checkout)
 exports.createOrder = async (req, res) => {
   try {
-    // Simulate a Razorpay-like order object
-    const order = {
-      id: "order_" + Date.now(), // fake order id
-      amount: req.body.amount,
+    let { amount } = req.body;
+    if (!amount) return res.status(400).json({ success: false, message: "amount required" });
+
+    amount = Number(amount);
+    if (isNaN(amount) || amount <= 0)
+      return res.status(400).json({ success: false, message: "invalid amount" });
+
+    const options = {
+      amount: Math.round(amount * 100), // rupees -> paise
       currency: "INR",
-      receipt: "receipt_" + Date.now(),
+      receipt: `receipt_${Date.now()}`,
+      payment_capture: 1, // auto-capture (test)
     };
-    res.json({ success: true, order });
+
+    const order = await razorpay.orders.create(options);
+    return res.json({ success: true, order });
   } catch (err) {
-    console.error("Mock order error:", err);
-    res.status(500).json({ success: false, message: "Unable to create order" });
+    console.error("Razorpay createOrder error:", err);
+    return res.status(500).json({ success: false, message: "Unable to create order" });
   }
 };
 
-// Verify fake payment
+// Verify payment signature from Checkout (handler response)
 exports.verifyPayment = async (req, res) => {
   try {
-    // In mock mode, assume payment always succeeds
-    const { order_id, payment_id } = req.body;
+    const order_id = req.body.razorpay_order_id || req.body.order_id || req.body.orderId;
+    const payment_id = req.body.razorpay_payment_id || req.body.payment_id;
+    const signature = req.body.razorpay_signature || req.body.signature;
 
-    // You can also add logic to reject some payments randomly if you want testing
-    res.json({ success: true, message: "Payment verified successfully", payment_id, order_id });
+    if (!order_id || !payment_id || !signature) {
+      return res.status(400).json({ success: false, message: "Missing verification fields" });
+    }
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${order_id}|${payment_id}`)
+      .digest("hex");
+
+    if (expectedSignature === signature) {
+      return res.json({ success: true, message: "Payment verified", order_id, payment_id });
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
+    }
   } catch (err) {
-    console.error("Mock verify error:", err);
-    res.status(500).json({ success: false, message: "Payment verification failed" });
+    console.error("Razorpay verifyPayment error:", err);
+    return res.status(500).json({ success: false, message: "Verification failed" });
   }
 };

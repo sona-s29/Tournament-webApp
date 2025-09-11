@@ -1,77 +1,104 @@
-const db = require("../config/firebase");
-const tournaments = require("../models/tournaments");
+// src/controllers/slotController.js
+const db = require("../config/firebase"); 
+const tournaments = require("../models/tournaments"); // ✅ contains groupLink per tournament
 
-// Join a slot
+// Join slot: server auto-assigns first empty slot for given tournament
 exports.joinSlot = async (req, res) => {
   try {
-    const { userIds, slotNumber, tournamentName } = req.body;
-
+    const { userIds, tournamentName } = req.body;
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({ message: "userIds must be a non-empty array" });
     }
+    if (!tournamentName) return res.status(400).json({ message: "tournamentName required" });
 
     // Find tournament config
-    const tournament = tournaments.find((t) => t.name === tournamentName);
-    if (!tournament) return res.status(400).json({ message: "Invalid tournament" });
-    if (userIds.length !== tournament.teamSize) {
-      return res
-        .status(400)
-        .json({ message: `This tournament requires a team of ${tournament.teamSize}` });
+    const tournamentConfig = tournaments.find(t => t.name === tournamentName);
+    if (!tournamentConfig) {
+      return res.status(404).json({ message: "Tournament not found" });
     }
 
-    // Check if any user already in a slot
-    const slotsSnap = await db.collection("slots").where("tournamentName", "==", tournamentName).get();
-    for (let slotDoc of slotsSnap.docs) {
-      const slot = slotDoc.data();
-      if (slot.userIds && slot.userIds.some((id) => userIds.includes(id))) {
-        return res.status(400).json({ message: "One or more users already joined a slot" });
-      }
-    }
-
-    // Find slot
-    const slotQuery = await db
-      .collection("slots")
-      .where("slotNumber", "==", slotNumber)
+    // Transaction to avoid race conditions
+    const slotsRef = db.collection("slots")
       .where("tournamentName", "==", tournamentName)
-      .limit(1)
-      .get();
+      .orderBy("slotNumber");
 
-    if (slotQuery.empty) return res.status(404).json({ message: "Slot not found" });
+    const result = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(slotsRef);
 
-    const slotDoc = slotQuery.docs[0];
-    if (slotDoc.data().userIds && slotDoc.data().userIds.length > 0) {
-      return res.status(400).json({ message: "Slot already taken" });
+      if (snap.empty) {
+        return { ok: false, status: 404, message: "No slots available for this tournament" };
+      }
+
+      // Prevent duplicate joins
+      for (const doc of snap.docs) {
+        const s = doc.data();
+        if (s.userIds && s.userIds.some(id => userIds.includes(id))) {
+          return { ok: false, status: 400, message: "One or more users already joined a slot" };
+        }
+      }
+
+      // Find first empty slot
+      let slotDoc = null;
+      for (const doc of snap.docs) {
+        const slot = doc.data();
+        if (!slot.userIds || slot.userIds.length === 0) {
+          slotDoc = doc;
+          break;
+        }
+      }
+
+      if (!slotDoc) {
+        return { ok: false, status: 400, message: "All slots are full" };
+      }
+
+      // Update slot
+      tx.update(slotDoc.ref, { userIds });
+      return { ok: true, slotNumber: slotDoc.data().slotNumber };
+    });
+
+    if (!result.ok) {
+      return res.status(result.status || 400).json({ message: result.message });
     }
 
-    await slotDoc.ref.update({ userIds });
-    res.json({ message: "Slot joined successfully" });
+    return res.json({
+      success: true,
+      message: "Slot joined successfully",
+      slotNumber: result.slotNumber,
+      whatsappLink: tournamentConfig.groupLink // ✅ send WhatsApp group link
+    });
   } catch (err) {
     console.error("Error in joinSlot:", err);
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
-// Get all slots
+// Get slots (array)
 exports.getSlots = async (req, res) => {
   try {
     const { tournamentName } = req.query;
-    const slotsSnap = tournamentName
-      ? await db.collection("slots").where("tournamentName", "==", tournamentName).orderBy("slotNumber").get()
-      : await db.collection("slots").orderBy("slotNumber").get();
+    let query = db.collection("slots").orderBy("slotNumber");
+    if (tournamentName) {
+      query = db.collection("slots")
+        .where("tournamentName", "==", tournamentName)
+        .orderBy("slotNumber");
+    }
 
-    const slots = slotsSnap.docs.map((doc) => {
-      const slot = doc.data();
+    const snap = await query.get();
+    if (snap.empty) return res.json([]);
+
+    const slots = snap.docs.map(doc => {
+      const d = doc.data();
       return {
-        slotNumber: slot.slotNumber,
-        userIds: slot.userIds || [],
-        tournamentName: slot.tournamentName || null,
+        slotNumber: d.slotNumber,
+        userIds: d.userIds || [],
+        tournamentName: d.tournamentName || null,
       };
     });
 
-    res.json(slots);
+    return res.json(slots);
   } catch (err) {
     console.error("Error in getSlots:", err);
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -79,18 +106,25 @@ exports.getSlots = async (req, res) => {
 exports.resetSlots = async (req, res) => {
   try {
     const { tournamentName } = req.query;
-    const slotsSnap = tournamentName
-      ? await db.collection("slots").where("tournamentName", "==", tournamentName).get()
-      : await db.collection("slots").get();
+    const query = tournamentName
+      ? db.collection("slots").where("tournamentName", "==", tournamentName)
+      : db.collection("slots");
+
+    const snap = await query.get();
+    if (snap.empty) return res.json({ message: "No slots to reset" });
 
     const batch = db.batch();
-    slotsSnap.forEach((doc) => batch.update(doc.ref, { userIds: [] }));
+    snap.forEach(doc => batch.update(doc.ref, { userIds: [] }));
     await batch.commit();
 
-    res.json({ message: tournamentName ? `Slots reset for ${tournamentName}` : "All slots reset" });
+    return res.json({
+      message: tournamentName
+        ? `Slots reset for ${tournamentName}`
+        : "All slots reset"
+    });
   } catch (err) {
     console.error("Error in resetSlots:", err);
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -98,19 +132,20 @@ exports.resetSlots = async (req, res) => {
 exports.getParticipants = async (req, res) => {
   try {
     const { tournamentName } = req.query;
-    const slotsSnap = await db.collection("slots").where("tournamentName", "==", tournamentName).get();
+    if (!tournamentName) return res.status(400).json({ message: "tournamentName required" });
 
-    let participants = [];
-    slotsSnap.forEach((doc) => {
-      const slot = doc.data();
-      if (slot.userIds && slot.userIds.length > 0) {
-        participants.push(...slot.userIds);
-      }
+    const snap = await db.collection("slots").where("tournamentName", "==", tournamentName).get();
+    if (snap.empty) return res.json([]);
+
+    const participants = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.userIds && d.userIds.length > 0) participants.push(...d.userIds);
     });
 
-    res.json(participants);
+    return res.json(participants);
   } catch (err) {
     console.error("Error in getParticipants:", err);
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };

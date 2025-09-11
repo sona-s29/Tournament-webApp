@@ -1,8 +1,7 @@
 const express = require("express");
-const slotController = require("../controllers/slotController");
-const adminAuth = require("../middleware/authMiddleware");
-
 const router = express.Router();
+const slotController = require("../controllers/slotController");
+const adminAuth = require("../middleware/authMiddleware"); // keep if you use admin auth
 
 router.post("/join", slotController.joinSlot);
 router.get("/", slotController.getSlots);
