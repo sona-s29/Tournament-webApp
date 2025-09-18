@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 .env
-firebaseServiceAccount.json.json
+firebaseServiceAccount.json
 *.key
 *.pem
 *.env
