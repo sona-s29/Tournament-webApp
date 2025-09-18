@@ -19,8 +19,8 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use("/api/auth", require("./src/routes/auth.js"));
-app.use("/api/slots", require("./src/routes/slots.js"));
-app.use("/api/payment", require("./src/routes/payment.js"));
+app.use("/auth", require("./src/routes/auth.js"));
+app.use("/slots", require("./src/routes/slots.js"));
+app.use("/payment", require("./src/routes/payment.js"));
 
 module.exports = app;
