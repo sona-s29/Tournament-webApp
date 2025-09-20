@@ -9,8 +9,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "https://classytournament.vercel.app/", // your deployed frontend domain
-    "https://tournament-webapp.onrender.com"             // for local dev (Vite default)
+    "http://localhost:5173/", // your deployed frontend domain
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
